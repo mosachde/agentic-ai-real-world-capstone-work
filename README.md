@@ -4,7 +4,7 @@
 
 CMU Executive Education, *Agentic AI and Applications*, capstone project by Mohit Sachdeva.
 
-> **Status: v1.0, project definition (Module 1).** The problem, users, positioning and a draft architecture are defined. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
+> **Status: v2.1, agent design refinement (Module 2).** The design now specifies where the agent uses reasoning loops, what it remembers (short-term and long-term), and which tasks are handed to tools. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
 
 ## The problem
 
@@ -22,21 +22,23 @@ Given a ticker and a plain-language thesis, Thesis Check will:
 2. Gather evidence from SEC filings (RAG) and structured XBRL financial data (tools).
 3. Run a bounded bull-vs-bear debate between agents to counter confirmation bias.
 4. Verify every number and citation with a fact-checker agent.
-5. Return a verdict (Intact / Weakening / Broken) with cited evidence for the user to approve.
+5. Return a verdict (Intact / Weakening / Broken) with cited evidence for the user to approve, or "Untestable as stated" if the thesis cannot be turned into testable claims.
 
-### Draft agent roster (to be refined in the next checkpoint)
+### System design (Checkpoint 2.1)
 
-| Agent | Role |
-|---|---|
-| Supervisor | Plans the run, routes work, enforces round and budget limits |
-| Thesis Analyst | Converts the thesis into testable claims |
-| Filing Researcher | Retrieves relevant 10-K / 10-Q / 8-K passages |
-| Financial Data Analyst | Pulls XBRL facts and computes ratios with deterministic tools |
-| Bull Advocate / Bear Advocate | Argue for and against each claim using only gathered evidence |
-| Fact-Checker | Validates every number and citation before anything is shown |
-| Report Writer | Produces the verdict report |
+![Thesis Check system design: agents, reasoning loops, memory, tools and human checkpoints](docs/images/thesis-check-system-design.png)
 
-A human approves the extracted claims before research starts and approves or overrides the final verdict.
+| Agent | Role | Reasoning loop | Long-term memory |
+|---|---|---|---|
+| Supervisor | Runs a fixed workflow, routes work, enforces step and cost limits | No (fixed workflow with bounded loop-backs) | Episodic (read) |
+| Thesis Analyst | Turns the thesis into 3–5 testable claims | Light (clarifying questions with the user) | Semantic + episodic |
+| Filing Researcher | Finds relevant 10-K / 10-Q / 8-K passages | Yes, full ReAct loop | Semantic (where data lives) |
+| Financial Data Analyst | Pulls XBRL figures; all calculations done by tools | Yes, short ReAct loop | Semantic (line-item mappings) |
+| Bull Advocate / Bear Advocate | Argue for and against each claim using only gathered evidence | No (one-round structured debate) | None, by design |
+| Fact-Checker | Matches every number and quote to its source | No (rule-based checks) | None, by design |
+| Report Writer | Produces the verdict and what changed since the last check | No | Episodic (read) |
+
+A human confirms the extracted claims before research starts and approves or overrides the final verdict. A failed fact-check sends a claim back to the evidence agents at most twice. Full reasoning in [Capstone Checkpoint 2.1](docs/Capstone%20Checkpoint%202.1%20-%20Agent%20Design%20Refinement.docx); open questions in [Design Considerations](docs/Design%20Considerations%20-%20Thesis%20Check.md).
 
 **Planned stack:** Python, LangGraph, an LLM API (Claude or OpenAI), SEC EDGAR APIs, Chroma, SQLite, Pydantic, pytest.
 
@@ -46,8 +48,12 @@ A human approves the extracted claims before research starts and approves or ove
 .
 ├── README.md
 ├── docs/
-│   ├── Self-study Capstone Checkpoint Activity 7.1_...docx   # capstone report plan
-│   └── STP and Positioning - Thesis Check.md                 # segmentation, targeting, positioning, persona
+│   ├── Capstone Checkpoint 1.1 - Thesis Check.docx                # Module 1: project scoping and initial design
+│   ├── Capstone Checkpoint 2.1 - Agent Design Refinement.docx     # Module 2: reasoning loops, memory, tools
+│   ├── Design Considerations - Thesis Check.md                    # open design decisions to revisit
+│   ├── STP and Positioning - Thesis Check.md                      # segmentation, targeting, positioning, persona
+│   ├── Self-study Capstone Checkpoint Activity 7.1_...docx        # capstone report plan
+│   └── images/thesis-check-system-design.png                      # system design diagram
 └── code/                                                      # CMU Research Agent starter template (baseline)
     ├── research_agent/
     ├── tests/
@@ -68,11 +74,12 @@ The single-agent starter is kept as the **baseline** the multi-agent system will
 
 ## Roadmap
 
-- **v1.0**: problem definition, users, positioning, draft architecture *(this version)*
-- **v2**: SEC EDGAR data client and financial tools; single tool-using agent
-- **v3**: RAG over filings; multi-agent supervisor graph
-- **v4**: bull/bear debate, fact-checker, human-in-the-loop
-- **v5**: memory across runs, evaluation harness (golden set, numeric accuracy, baseline comparison), guardrails
+- **v1.0 / v1.1**: problem definition, users, positioning, draft architecture (Checkpoint 1.1)
+- **v2.1**: agent design refinement: reasoning loops, memory, tools, system diagram (Checkpoint 2.1) *(this version)*
+- **Next**: SEC EDGAR data client and financial tools; single ReAct Filing Researcher (first upgrade over the baseline)
+- **Then**: RAG over filings; multi-agent supervisor graph
+- **Then**: bull/bear debate, fact-checker, human-in-the-loop
+- **Then**: memory across runs, evaluation harness (golden set, numeric accuracy, baseline comparison), guardrails
 
 ## Disclaimer
 
