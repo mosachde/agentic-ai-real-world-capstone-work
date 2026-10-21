@@ -8,6 +8,8 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 |---|---|---|---|
 | 1 | Verdict scoring rubric | Feedback | Open, to revisit |
 | 2 | Unclear thesis: offer at most 2 peer theses, otherwise block the run | Own product decision | Provisional, to revisit |
+| 3 | How the evidence agents read and write "data facts" memory | Review of Checkpoint 2.1 | Open, to revisit |
+| 4 | Bull/Bear requests for more evidence: an unbounded loop | Review of Checkpoint 2.1 | Open, to revisit |
 
 ---
 
@@ -38,6 +40,7 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 - **Claim-level scoring rules.** What makes a single claim Met vs Weakening vs Broken? For example: Met = threshold satisfied in the latest period; Weakening = satisfied, but trending toward the threshold or within a margin of it; Broken = threshold missed. The trend window and margin need defining.
 - **Confidence vs verdict.** Bull/bear disagreement and fact-check results should probably set a separate *confidence* level (High / Medium / Low) rather than change the verdict itself.
 - **Where the rubric lives.** Procedural memory (a versioned rules file in Git), applied by deterministic code, not by an LLM prompt.
+- **Define the labels in the checkpoint doc.** Checkpoint 2.1 uses Met/Broken for claims and Intact/Weakening for the thesis, and calls "Untestable as stated" a "fourth outcome", but never lists the three verdicts. Once the rubric is settled, state both label sets in one line so a reader can tell claim scores from thesis verdicts.
 
 ---
 
@@ -62,3 +65,39 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 - **Choosing the 2 theses.** Most common? Most testable? One bullish-leaning and one more cautious?
 - **Is blocking too strict?** Measure how many users drop off at this step once it is built.
 - **Evaluation.** Add a "no thesis / gift stock" case to the golden test set. Expected behavior: offers at most 2 theses and never issues a verdict without a confirmed thesis.
+
+---
+
+## 3. How the evidence agents read and write "data facts" memory
+
+**Source:** review of Checkpoint 2.1 (Oct 21, 2026).
+
+**The gap.** The memory table and Figure 1 give the Filing Researcher and the Financial Data Analyst semantic memory: where a company reports a figure, and how it labels its line items. But the tools table lists the thesis and run-history store only for the Supervisor, Thesis Analyst and Report Writer. The design does not say how the evidence agents read these facts, or who saves new ones.
+
+**Why it matters.** This is the one place the system learns from its own runs. A wrong fact (e.g., a mislabeled line item) would be reused on every later check of that company without anyone noticing.
+
+**Proposal.**
+1. **Reads:** the Supervisor loads the relevant data facts into each evidence agent's scoped view at the start of the run. Neither agent needs a memory tool, which keeps least privilege intact.
+2. **Writes:** a fact is saved only after the Fact-Checker has verified the evidence it came from, by code at the end of the run, never by an agent mid-loop.
+
+**Open questions to resolve when revisiting:**
+- **Staleness.** Should a saved fact expire, or be re-checked when a company changes its reporting (new segments, restated figures)?
+- **Scope.** Are facts stored per company, or shared across companies that use the same XBRL tags?
+- **Doc consistency.** Update the tools table or the memory table in the next checkpoint so both describe the same access.
+
+---
+
+## 4. Bull/Bear requests for more evidence: an unbounded loop
+
+**Source:** review of Checkpoint 2.1 (Oct 21, 2026).
+
+**The gap.** Section 2 says the advocates get one rebuttal round and "if more evidence is needed, they ask the Supervisor." This path is not in Figure 1 or in the list of bounded feedback loops, and it has no limit.
+
+**Why it matters.** Without a cap, the debate can keep reopening research and spending the cost budget, which is the unbounded behavior the fixed Supervisor workflow is meant to prevent. An advocate could also keep asking until it finds support for its side.
+
+**Proposal.** Count an evidence request against the same budget as fact-check rework: at most one request per claim, and at most two trips back to the evidence agents per claim in total. Once the budget is spent, the gap is recorded and lowers confidence, the same way unresolved disagreement does.
+
+**Open questions to resolve when revisiting:**
+- **Who approves a request.** The Supervisor by a fixed rule (e.g., the claim has fewer than N cited passages), or does every request go through?
+- **What happens after new evidence arrives.** A fresh rebuttal round, or the debate closes with the existing arguments plus the new evidence?
+- **Doc consistency.** Add the path to Figure 1 and to the bounded-loop list in the next checkpoint.
