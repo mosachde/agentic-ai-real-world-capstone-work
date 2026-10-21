@@ -4,7 +4,7 @@
 
 CMU Executive Education, *Agentic AI and Applications*, capstone project by Mohit Sachdeva.
 
-> **Status: v2.1, agent design refinement (Module 2).** The design now specifies where the agent uses reasoning loops, what it remembers (short-term and long-term), and which tasks are handed to tools. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
+> **Status: v3.1, retrieval design (Module 3).** The design now specifies how the agent retrieves evidence: semantic search over SEC filing text, and exact XBRL lookups for reported numbers. It builds on the v2.1 design of reasoning loops, memory and tools. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
 
 ## The problem
 
@@ -40,6 +40,10 @@ Given a ticker and a plain-language thesis, Thesis Check will:
 
 A human confirms the extracted claims before research starts and approves or overrides the final verdict. A failed fact-check sends a claim back to the evidence agents at most twice. Full reasoning in [Capstone Checkpoint 2.1](docs/Capstone%20Checkpoint%202.1%20-%20Agent%20Design%20Refinement.docx); open questions in [Design Considerations](docs/Design%20Considerations%20-%20Thesis%20Check.md).
 
+### Retrieval design (Checkpoint 3.1)
+
+Retrieval is used for filing text only. Explanations, guidance and new risks are found by semantic search over 10-K, 10-Q and 8-K filings; reported numbers come from exact XBRL lookups, because similarity search can return the right figure from the wrong quarter. Filings are split by section into ~500-token chunks, labeled with company, form, period and section, and stored in Chroma. The Filing Researcher's `search_filings` tool filters by ticker and period before ranking, returns the top 5 passages with citations, and never falls back to older filings on its own. Full reasoning in [Capstone Checkpoint 3.1](docs/Capstone%20Checkpoint%203.1%20-%20Retrieval%20Design.md).
+
 **Planned stack:** Python, LangGraph, an LLM API (Claude or OpenAI), SEC EDGAR APIs, Chroma, SQLite, Pydantic, pytest.
 
 ## Repository structure
@@ -50,6 +54,7 @@ A human confirms the extracted claims before research starts and approves or ove
 ├── docs/
 │   ├── Capstone Checkpoint 1.1 - Thesis Check.docx                # Module 1: project scoping and initial design
 │   ├── Capstone Checkpoint 2.1 - Agent Design Refinement.docx     # Module 2: reasoning loops, memory, tools
+│   ├── Capstone Checkpoint 3.1 - Retrieval Design.md / .docx      # Module 3: retrieval (RAG) design
 │   ├── Design Considerations - Thesis Check.md                    # open design decisions to revisit
 │   ├── STP and Positioning - Thesis Check.md                      # segmentation, targeting, positioning, persona
 │   ├── Self-study Capstone Checkpoint Activity 7.1_...docx        # capstone report plan
@@ -75,9 +80,10 @@ The single-agent starter is kept as the **baseline** the multi-agent system will
 ## Roadmap
 
 - **v1.0 / v1.1**: problem definition, users, positioning, draft architecture (Checkpoint 1.1)
-- **v2.1**: agent design refinement: reasoning loops, memory, tools, system diagram (Checkpoint 2.1) *(this version)*
-- **Next**: SEC EDGAR data client and financial tools; single ReAct Filing Researcher (first upgrade over the baseline)
-- **Then**: RAG over filings; multi-agent supervisor graph
+- **v2.1**: agent design refinement: reasoning loops, memory, tools, system diagram (Checkpoint 2.1)
+- **v3.1**: retrieval design: semantic search over SEC filings, chunking, top-k, wrong-period failure mode (Checkpoint 3.1) *(this version)*
+- **Next**: SEC EDGAR data client, filing ingest and `search_filings` retrieval tool, financial tools; single ReAct Filing Researcher (first upgrade over the baseline)
+- **Then**: multi-agent supervisor graph
 - **Then**: bull/bear debate, fact-checker, human-in-the-loop
 - **Then**: memory across runs, evaluation harness (golden set, numeric accuracy, baseline comparison), guardrails
 
