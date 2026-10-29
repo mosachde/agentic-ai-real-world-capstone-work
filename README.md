@@ -4,7 +4,7 @@
 
 CMU Executive Education, *Agentic AI and Applications*, capstone project by Mohit Sachdeva.
 
-> **Status: v2.1, agent design refinement (Module 2).** The design now specifies where the agent uses reasoning loops, what it remembers (short-term and long-term), and which tasks are handed to tools. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
+> **Status: v4.1, Tree-of-Thought reasoning design (Module 4).** The design now specifies where the agent explores alternatives before committing: Tree-of-Thought search is used in one step only, when the Thesis Analyst turns a thesis into testable claims. It builds on the v3.1 retrieval design and the v2.1 design of reasoning loops, memory and tools. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
 
 ## The problem
 
@@ -24,14 +24,14 @@ Given a ticker and a plain-language thesis, Thesis Check will:
 4. Verify every number and citation with a fact-checker agent.
 5. Return a verdict (Intact / Weakening / Broken) with cited evidence for the user to approve, or "Untestable as stated" if the thesis cannot be turned into testable claims.
 
-### System design (Checkpoint 2.1)
+### System design (Checkpoint 2.1, updated in 4.1)
 
-![Thesis Check system design: agents, reasoning loops, memory, tools and human checkpoints](docs/images/thesis-check-system-design.png)
+![Thesis Check system design: agents, reasoning loops, Tree-of-Thought claim search, memory, tools and human checkpoints](docs/images/thesis-check-system-design-v4.1.png)
 
 | Agent | Role | Reasoning loop | Long-term memory |
 |---|---|---|---|
 | Supervisor | Runs a fixed workflow, routes work, enforces step and cost limits | No (fixed workflow with bounded loop-backs) | Episodic (read) |
-| Thesis Analyst | Turns the thesis into 3–5 testable claims | Light (clarifying questions with the user) | Semantic + episodic |
+| Thesis Analyst | Turns the thesis into 3–5 testable claims | Tree-of-Thought claim search (beam width 2, depth 2), plus clarifying questions with the user (updated in 4.1) | Semantic + episodic |
 | Filing Researcher | Finds relevant 10-K / 10-Q / 8-K passages | Yes, full ReAct loop | Semantic (where data lives) |
 | Financial Data Analyst | Pulls XBRL figures; all calculations done by tools | Yes, short ReAct loop | Semantic (line-item mappings) |
 | Bull Advocate / Bear Advocate | Argue for and against each claim using only gathered evidence | No (one-round structured debate) | None, by design |
@@ -40,7 +40,15 @@ Given a ticker and a plain-language thesis, Thesis Check will:
 
 A human confirms the extracted claims before research starts and approves or overrides the final verdict. A failed fact-check sends a claim back to the evidence agents at most twice. Full reasoning in [Capstone Checkpoint 2.1](docs/Capstone%20Checkpoint%202.1%20-%20Agent%20Design%20Refinement.docx); open questions in [Design Considerations](docs/Design%20Considerations%20-%20Thesis%20Check.md).
 
-**Planned stack:** Python, LangGraph, an LLM API (Claude or OpenAI), SEC EDGAR APIs, Chroma, SQLite, Pydantic, pytest.
+### Retrieval design (Checkpoint 3.1)
+
+Retrieval is used for filing text only. Explanations, guidance and new risks are found by semantic search over 10-K, 10-Q and 8-K filings; reported numbers come from exact XBRL lookups, because similarity search can return the right figure from the wrong quarter. Filings are split by section into ~500-token chunks, labeled with company, form, period and section, and stored in Chroma. The Filing Researcher's `search_filings` tool filters by ticker and period before ranking, returns the top 5 passages with citations, and never falls back to older filings on its own. Full reasoning in [Capstone Checkpoint 3.1](docs/Capstone%20Checkpoint%203.1%20-%20Retrieval%20Design.md).
+
+### Reasoning design (Checkpoint 4.1)
+
+Tree-of-Thought (ToT) is used only for claim decomposition, the one step where an early wrong choice is expensive and no later step can catch it: a linear chain that reads "keep margins above 60%" as "last quarter's margin" never tests management's outlook, and the run returns a fully verified answer to the wrong question. The Thesis Analyst runs a beam search (width 2) over two levels: 3 readings of the thesis as a cause-and-effect chain, then 3 claim sets for each reading kept. Code and tool checks gate every claim (well-formed, no price claims, the investor's numbers kept, testable from this company's SEC data). The testability probes answer "can this be tested?", never "would it pass?". A separate critic LLM scores each candidate on faithfulness, coverage, whether it could fail, distinctness and clarity. When the top two claim sets tie and come from different readings, the investor picks one at the existing confirmation step. The search costs about 12 short LLM calls and runs once per thesis, never on quarterly re-checks. Every other agent keeps its 2.1 reasoning, and the verdict stays deterministic. LangGraph runs the search and holds the tree, LangChain runs the generator and critic, and MCP serves the SEC tools the probes share with the evidence agents. CrewAI was evaluated for each role and isn't needed. Full reasoning in [Capstone Checkpoint 4.1](docs/Capstone%20Checkpoint%204.1%20-%20Tree-of-Thought%20Reasoning.md).
+
+**Planned stack:** Python, LangGraph and LangChain, MCP (SEC tools and thesis store), an LLM API (Claude or OpenAI), SEC EDGAR APIs, Chroma, SQLite, Pydantic, pytest.
 
 ## Repository structure
 
@@ -50,10 +58,14 @@ A human confirms the extracted claims before research starts and approves or ove
 ├── docs/
 │   ├── Capstone Checkpoint 1.1 - Thesis Check.docx                # Module 1: project scoping and initial design
 │   ├── Capstone Checkpoint 2.1 - Agent Design Refinement.docx     # Module 2: reasoning loops, memory, tools
+│   ├── Capstone Checkpoint 3.1 - Retrieval Design.md / .docx      # Module 3: retrieval (RAG) design
+│   ├── Capstone Checkpoint 4.1 - Tree-of-Thought Reasoning.md / .docx  # Module 4: Tree-of-Thought reasoning design
 │   ├── Design Considerations - Thesis Check.md                    # open design decisions to revisit
 │   ├── STP and Positioning - Thesis Check.md                      # segmentation, targeting, positioning, persona
 │   ├── Self-study Capstone Checkpoint Activity 7.1_...docx        # capstone report plan
-│   └── images/thesis-check-system-design.png                      # system design diagram
+│   └── images/
+│       ├── thesis-check-system-design.png                         # v2.1 system design diagram
+│       └── thesis-check-system-design-v4.1.png / .svg             # v4.1 diagram with ToT (SVG is the editable source)
 └── code/                                                      # CMU Research Agent starter template (baseline)
     ├── research_agent/
     ├── tests/
@@ -75,9 +87,11 @@ The single-agent starter is kept as the **baseline** the multi-agent system will
 ## Roadmap
 
 - **v1.0 / v1.1**: problem definition, users, positioning, draft architecture (Checkpoint 1.1)
-- **v2.1**: agent design refinement: reasoning loops, memory, tools, system diagram (Checkpoint 2.1) *(this version)*
-- **Next**: SEC EDGAR data client and financial tools; single ReAct Filing Researcher (first upgrade over the baseline)
-- **Then**: RAG over filings; multi-agent supervisor graph
+- **v2.1**: agent design refinement: reasoning loops, memory, tools, system diagram (Checkpoint 2.1)
+- **v3.1**: retrieval design: semantic search over SEC filings, chunking, top-k, wrong-period failure mode (Checkpoint 3.1)
+- **v4.1**: Tree-of-Thought reasoning design: beam search over claim decompositions, gates and critic rubric, tie policy, budget, tool mapping (Checkpoint 4.1) *(this version)*
+- **Next**: SEC EDGAR data client, filing ingest and `search_filings` retrieval tool, financial tools; single ReAct Filing Researcher (first upgrade over the baseline)
+- **Then**: multi-agent supervisor graph
 - **Then**: bull/bear debate, fact-checker, human-in-the-loop
 - **Then**: memory across runs, evaluation harness (golden set, numeric accuracy, baseline comparison), guardrails
 
