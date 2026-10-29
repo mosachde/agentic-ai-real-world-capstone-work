@@ -10,6 +10,7 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 | 2 | Unclear thesis: offer at most 2 peer theses, otherwise block the run | Own product decision | Provisional, to revisit |
 | 3 | How the evidence agents read and write "data facts" memory | Review of Checkpoint 2.1 | Open, to revisit |
 | 4 | Bull/Bear requests for more evidence: an unbounded loop | Review of Checkpoint 2.1 | Open, to revisit |
+| 5 | Tree-of-Thought claim search: provisional thresholds, weights and budget | Checkpoint 4.1 | Provisional, to calibrate |
 
 ---
 
@@ -101,3 +102,34 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 - **Who approves a request.** The Supervisor by a fixed rule (e.g., the claim has fewer than N cited passages), or does every request go through?
 - **What happens after new evidence arrives.** A fresh rebuttal round, or the debate closes with the existing arguments plus the new evidence?
 - **Doc consistency.** Add the path to Figure 1 and to the bounded-loop list in the next checkpoint.
+
+---
+
+## 5. Tree-of-Thought claim search: provisional thresholds, weights and budget
+
+**Source:** Checkpoint 4.1 (Oct 29, 2026).
+
+**The gap.** Checkpoint 4.1 sets the numbers that control the claim search, but they are my estimates, not measured values:
+
+| Setting | Provisional value | What it controls |
+|---|---|---|
+| Tie margin | 0.25 points (1–5 scale) | When the investor is shown two readings instead of one |
+| Claim-set cutoff | Weighted score below 3.5 is pruned | How strict the search is before returning "Untestable as stated" |
+| Faithfulness floor | Faithful below 3 is pruned at either depth | The only cut the critic can make on its own |
+| Rubric weights | Faithful 30%, Covers the chain 25%, Could fail 25%, Distinct 10%, Clear 10% | Which claim set wins |
+| Beam width | 2 readings kept at depth 1 | How many readings survive a critic misjudgment |
+| Budget | 12 LLM calls (cap 14), 20 tool probes, ~30k tokens, under 20 seconds | Cost and wait before the confirmation screen |
+
+**Why it matters.** Each value moves the system in a direction the product cares about. A wide tie margin shows the investor two readings too often and adds friction; a narrow one hides real ambiguity. A strict cutoff turns testable theses into "Untestable as stated"; a loose one lets weak claim sets through. Too much weight on "Could fail" could tilt the search toward claims built to break, a bear bias that mirrors the confirmation bias the product counters.
+
+**Proposal.** Set the values on the golden set before ToT goes live, not by judgment:
+1. Write about 20 test theses with my reference readings and claim sets, including a thesis with two valid readings and one whose key metric the company doesn't report.
+2. Measure how often the reference reading survives depth 1 (target: at least 90%), how often runs end in a tie, and how often they end "Untestable as stated."
+3. Adjust the beam width, cutoff and weights until the targets hold, then record the final values in Checkpoint 4.1 and the README.
+
+**Open questions to resolve when revisiting:**
+- **Tie-rate target.** What share of runs should show two readings before it feels like friction? Measure once the confirmation screen is built.
+- **Bear tilt.** Check that a claim set's "Could fail" score doesn't predict its eventual verdict; if it does, the search is choosing claims built to break.
+- **Clarifying-question limit.** The failure path asks one clarifying question that counts toward 2.1's limit of 2–3. If the limit is already spent, should the run go straight to "Untestable as stated"?
+- **Probe cutoff.** The text testability probe should use the same similarity cutoff as `search_filings` (Checkpoint 3.1), so "testable at decomposition" means "findable at research". Confirm when the retrieval tool is built.
+- **Linear baseline.** If ToT doesn't beat a single linear decomposition on evidence coverage, agreement with reference claim sets and investor edit rate, it is removed (Checkpoint 4.1, Section 8).
