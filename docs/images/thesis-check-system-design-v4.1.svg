@@ -1,0 +1,283 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1790" viewBox="0 0 2000 1790">
+  <!-- Thesis Check system design, v4.1 (Checkpoint 4.1: ToT claim search in the Thesis Analyst).
+       Rebuilt from the v2.1 diagram. Render to PNG with headless Chrome at a
+       2000 x 1790 window and device scale factor 1.5 (3000 x 2685 px). -->
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600&amp;display=swap');
+      text { font-family: 'Noto Sans', 'Helvetica Neue', Arial, sans-serif; fill: #1f1f1f; }
+      .h-agent { font-size: 28px; font-weight: 700; }
+      .desc { font-size: 20px; fill: #2b2b2b; }
+      .badge { font-size: 17px; font-weight: 700; fill: #fff; }
+      .col-h { font-size: 23px; font-weight: 700; letter-spacing: 1.5px; }
+      .col-sub { font-size: 18px; fill: #4a4a4a; }
+      .mem-h { font-size: 21px; font-weight: 700; fill: #1f4e79; }
+      .mem { font-size: 19px; fill: #1f3a5a; }
+      .mem-i { font-size: 17px; font-style: italic; fill: #2e6a9e; }
+      .link-l { font-size: 17px; font-style: italic; fill: #2e6a9e; }
+      .tool-h { font-size: 22px; font-weight: 700; }
+      .tool { font-size: 18px; fill: #333; }
+      .grp { font-size: 18px; font-style: italic; fill: #4a4a4a; }
+      .human { font-size: 18px; font-weight: 700; fill: #8a5a00; }
+      .tot-h { font-size: 17px; font-weight: 700; fill: #0b5f5b; }
+      .tot-b { font-size: 15px; font-weight: 700; fill: #0b5f5b; }
+      .tot-s { font-size: 13.5px; fill: #2f4f4d; }
+      .tot-f { font-size: 14px; font-style: italic; fill: #0b5f5b; }
+      .legend { font-size: 19px; fill: #2b2b2b; }
+    </style>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#262626"/>
+    </marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="20" markerHeight="20" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a51c30"/>
+    </marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0b7a75"/>
+    </marker>
+  </defs>
+
+  <rect width="2000" height="1790" fill="#ffffff"/>
+
+  <!-- ===== Investor ===== -->
+  <rect x="813" y="25" width="427" height="95" rx="47" fill="#fff4dc" stroke="#c98a1b" stroke-width="3"/>
+  <text x="1026" y="63" text-anchor="middle" style="font-size:26px;font-weight:700">Investor (user)</text>
+  <text x="1026" y="97" text-anchor="middle" class="desc">ticker + plain-language thesis</text>
+
+  <!-- ===== Column headers ===== -->
+  <text x="30" y="197" class="col-h" fill="#1f4e79" style="fill:#1f4e79">LONG-TERM MEMORY</text>
+  <text x="30" y="227" class="col-sub">persists across quarterly checks</text>
+  <text x="1550" y="197" class="col-h" style="fill:#333">EXTERNAL TOOLS</text>
+  <text x="1550" y="227" class="col-sub">read-only · every result cites its source</text>
+  <text x="1550" y="254" class="col-sub" style="fill:#0b7a75">served over MCP (new in 4.1)</text>
+
+  <!-- ===== One check frame ===== -->
+  <rect x="507" y="140" width="959" height="1508" rx="22" fill="#fbf9f7" stroke="#a51c30" stroke-width="3" stroke-dasharray="12 8"/>
+  <text x="1440" y="182" text-anchor="end" style="font-size:24px;font-weight:700;fill:#a51c30;letter-spacing:1px">ONE CHECK</text>
+  <text x="1440" y="212" text-anchor="end" style="font-size:19px;fill:#444">a single run of the workflow</text>
+
+  <!-- Supervisor -->
+  <rect x="530" y="150" width="440" height="88" rx="12" fill="#a51c30"/>
+  <text x="554" y="183" style="font-size:24px;font-weight:700;fill:#fff">Supervisor · coordinator</text>
+  <text x="554" y="209" style="font-size:17px;fill:#fff">routes each step · enforces step and cost limits</text>
+  <text x="554" y="231" style="font-size:17px;fill:#fff">triggers rework · reads run history</text>
+
+  <!-- Investor -> Thesis Analyst -->
+  <line x1="1026" y1="120" x2="1026" y2="258" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- ===== Thesis Analyst (with ToT) ===== -->
+  <rect x="655" y="260" width="745" height="280" rx="8" fill="#fff" stroke="#a51c30" stroke-width="2.5"/>
+  <rect x="652" y="260" width="10" height="280" fill="#a51c30"/>
+  <text x="683" y="300" class="h-agent">Thesis Analyst</text>
+  <rect x="1012" y="275" width="176" height="34" rx="17" fill="#0b7a75"/>
+  <text x="1100" y="298" text-anchor="middle" class="badge">ToT · new in 4.1</text>
+  <rect x="1203" y="275" width="180" height="34" rx="17" fill="#c97a00"/>
+  <text x="1293" y="298" text-anchor="middle" class="badge">↻ clarify loop</text>
+  <text x="683" y="340" class="desc">Turns the thesis into 3–5 testable claims; asks questions if vague</text>
+
+  <!-- ToT inset -->
+  <rect x="672" y="358" width="716" height="168" rx="10" fill="#e8f5f3" stroke="#0b7a75" stroke-width="1.5"/>
+  <text x="688" y="385" class="tot-h">Tree-of-Thought claim search · beam width 2, depth 2</text>
+  <g>
+    <rect x="686" y="398" width="157" height="66" rx="6" fill="#fff" stroke="#0b7a75" stroke-width="1.5"/>
+    <text x="764.5" y="425" text-anchor="middle" class="tot-b">Thought Generator</text>
+    <text x="764.5" y="449" text-anchor="middle" class="tot-s">proposes 3 per node</text>
+    <rect x="863" y="398" width="157" height="66" rx="6" fill="#fff" stroke="#0b7a75" stroke-width="1.5"/>
+    <text x="941.5" y="425" text-anchor="middle" class="tot-b">Gates</text>
+    <text x="941.5" y="449" text-anchor="middle" class="tot-s">code + MCP probes</text>
+    <rect x="1040" y="398" width="157" height="66" rx="6" fill="#fff" stroke="#0b7a75" stroke-width="1.5"/>
+    <text x="1118.5" y="425" text-anchor="middle" class="tot-b">Claim Critic</text>
+    <text x="1118.5" y="449" text-anchor="middle" class="tot-s">scores the rubric</text>
+    <rect x="1217" y="398" width="157" height="66" rx="6" fill="#fff" stroke="#0b7a75" stroke-width="1.5"/>
+    <text x="1295.5" y="425" text-anchor="middle" class="tot-b">Beam prune</text>
+    <text x="1295.5" y="449" text-anchor="middle" class="tot-s">keep 2 → select 1</text>
+    <line x1="845" y1="431" x2="861" y2="431" stroke="#0b7a75" stroke-width="2" marker-end="url(#at)"/>
+    <line x1="1022" y1="431" x2="1038" y2="431" stroke="#0b7a75" stroke-width="2" marker-end="url(#at)"/>
+    <line x1="1199" y1="431" x2="1215" y2="431" stroke="#0b7a75" stroke-width="2" marker-end="url(#at)"/>
+  </g>
+  <text x="688" y="490" class="tot-f">depth 1: 3 readings → keep 2  ·  depth 2: 3 claim sets each → select 1 (2 if tied)</text>
+  <text x="688" y="512" class="tot-f">once per thesis; re-checks reuse confirmed claims  ·  nothing survives → “Untestable as stated”</text>
+
+  <!-- Probes tool link + box -->
+  <line x1="1400" y1="431" x2="1547" y2="431" stroke="#777" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round"/>
+  <circle cx="1400" cy="431" r="5" fill="#777"/><circle cx="1547" cy="431" r="5" fill="#777"/>
+  <rect x="1547" y="378" width="426" height="108" rx="10" fill="#eef7f6" stroke="#0b7a75" stroke-width="2"/>
+  <text x="1571" y="414" class="tool-h">Testability probes</text>
+  <text x="1571" y="444" class="tool">XBRL lookup + search_filings</text>
+  <text x="1571" y="472" class="tool" style="font-style:italic">found / not found only, never values</text>
+
+  <!-- TA -> human confirm -->
+  <line x1="1027" y1="540" x2="1027" y2="566" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- Human checkpoint: confirm -->
+  <rect x="682" y="568" width="690" height="46" rx="23" fill="#fff4dc" stroke="#d4952b" stroke-width="2.5"/>
+  <text x="1027" y="598" text-anchor="middle" class="human">HUMAN CHECKPOINT · investor confirms claims (or picks 1 of 2 readings)</text>
+
+  <line x1="1027" y1="614" x2="1027" y2="641" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- ===== Evidence agents ===== -->
+  <rect x="627" y="643" width="798" height="282" rx="12" fill="none" stroke="#e0b0b0" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="1410" y="670" text-anchor="end" class="grp">evidence agents · can run in parallel</text>
+
+  <rect x="655" y="680" width="745" height="98" rx="8" fill="#fff" stroke="#a51c30" stroke-width="2.5"/>
+  <rect x="652" y="680" width="10" height="98" fill="#a51c30"/>
+  <text x="683" y="718" class="h-agent">Filing Researcher</text>
+  <rect x="1203" y="695" width="180" height="34" rx="17" fill="#a51c30"/>
+  <text x="1293" y="718" text-anchor="middle" class="badge">↻ ReAct loop</text>
+  <text x="683" y="758" class="desc">Searches 10-K, 10-Q and 8-K filings; refines the search as it learns</text>
+
+  <rect x="655" y="808" width="745" height="98" rx="8" fill="#fff" stroke="#a51c30" stroke-width="2.5"/>
+  <rect x="652" y="808" width="10" height="98" fill="#a51c30"/>
+  <text x="683" y="846" class="h-agent">Financial Data Analyst</text>
+  <rect x="1203" y="823" width="180" height="34" rx="17" fill="#a51c30"/>
+  <text x="1293" y="846" text-anchor="middle" class="badge">↻ ReAct loop</text>
+  <text x="683" y="886" class="desc">Pulls reported figures; every calculation is done by a tool</text>
+
+  <!-- tool links -->
+  <line x1="1400" y1="729" x2="1547" y2="729" stroke="#777" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round"/>
+  <circle cx="1400" cy="729" r="5" fill="#777"/><circle cx="1547" cy="729" r="5" fill="#777"/>
+  <line x1="1400" y1="857" x2="1547" y2="857" stroke="#777" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round"/>
+  <circle cx="1400" cy="857" r="5" fill="#777"/><circle cx="1547" cy="857" r="5" fill="#777"/>
+
+  <rect x="1547" y="680" width="426" height="98" rx="10" fill="#f2f2f2" stroke="#8c8c8c" stroke-width="2"/>
+  <text x="1571" y="718" class="tool-h">SEC filing search</text>
+  <text x="1571" y="752" class="tool">10-K · 10-Q · 8-K passages</text>
+
+  <rect x="1547" y="798" width="426" height="119" rx="10" fill="#f2f2f2" stroke="#8c8c8c" stroke-width="2"/>
+  <text x="1571" y="834" class="tool-h">SEC financial data (XBRL)</text>
+  <text x="1571" y="866" class="tool-h">+ metric calculator</text>
+  <text x="1571" y="900" class="tool">margins, growth, threshold checks</text>
+
+  <line x1="1027" y1="925" x2="1027" y2="963" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- ===== Debate ===== -->
+  <rect x="627" y="965" width="798" height="155" rx="12" fill="none" stroke="#e0b0b0" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="643" y="992" class="grp">debate · one rebuttal round · evidence only, no tools, no long-term memory</text>
+
+  <rect x="655" y="1005" width="337" height="98" rx="8" fill="#fff" stroke="#a51c30" stroke-width="2.5"/>
+  <rect x="652" y="1005" width="10" height="98" fill="#a51c30"/>
+  <text x="683" y="1043" class="h-agent">Bull Advocate</text>
+  <text x="683" y="1081" class="desc">Argues the claim holds</text>
+
+  <rect x="1060" y="1005" width="340" height="98" rx="8" fill="#fff" stroke="#a51c30" stroke-width="2.5"/>
+  <rect x="1057" y="1005" width="10" height="98" fill="#a51c30"/>
+  <text x="1088" y="1043" class="h-agent">Bear Advocate</text>
+  <text x="1088" y="1081" class="desc">Argues the claim is failing</text>
+
+  <line x1="998" y1="1054" x2="1052" y2="1054" stroke="#262626" stroke-width="3" marker-start="url(#a)" marker-end="url(#a)"/>
+
+  <line x1="1027" y1="1120" x2="1027" y2="1148" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- ===== Fact-Checker ===== -->
+  <rect x="655" y="1150" width="745" height="100" rx="8" fill="#fff" stroke="#a51c30" stroke-width="2.5"/>
+  <rect x="652" y="1150" width="10" height="100" fill="#a51c30"/>
+  <text x="683" y="1188" class="h-agent">Fact-Checker</text>
+  <rect x="1183" y="1164" width="200" height="34" rx="17" fill="#fff" stroke="#8c8c8c" stroke-width="1.5"/>
+  <text x="1283" y="1187" text-anchor="middle" style="font-size:16px;font-weight:700;fill:#444">independent check</text>
+  <text x="683" y="1228" class="desc">Matches every number and quote to its source filing</text>
+
+  <line x1="1400" y1="1200" x2="1547" y2="1200" stroke="#777" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round"/>
+  <circle cx="1400" cy="1200" r="5" fill="#777"/><circle cx="1547" cy="1200" r="5" fill="#777"/>
+  <rect x="1547" y="1150" width="426" height="100" rx="10" fill="#f2f2f2" stroke="#8c8c8c" stroke-width="2"/>
+  <text x="1571" y="1188" class="tool-h">Number &amp; quote verifier</text>
+  <text x="1571" y="1222" class="tool">compares output to the source</text>
+
+  <rect x="1547" y="1285" width="426" height="95" rx="10" fill="none" stroke="#a51c30" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="1760" y="1325" text-anchor="middle" style="font-size:19px;font-weight:700;fill:#a51c30">No trading or buy/sell tool</text>
+  <text x="1760" y="1352" text-anchor="middle" style="font-size:17px;fill:#444">guardrail by design</text>
+
+  <!-- Rework loop: Fact-Checker -> Financial Data Analyst -->
+  <polyline points="655,1222 576,1222 576,882 640,882" fill="none" stroke="#a51c30" stroke-width="2.5" stroke-dasharray="10 7" marker-end="url(#ar)"/>
+  <text transform="translate(562,1052) rotate(-90)" text-anchor="middle" style="font-size:17px;font-weight:700;fill:#a51c30">rework if a check fails (max 2)</text>
+
+  <line x1="1027" y1="1250" x2="1027" y2="1278" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- ===== Report Writer ===== -->
+  <rect x="655" y="1280" width="745" height="100" rx="8" fill="#fff" stroke="#a51c30" stroke-width="2.5"/>
+  <rect x="652" y="1280" width="10" height="100" fill="#a51c30"/>
+  <text x="683" y="1318" class="h-agent">Report Writer</text>
+  <text x="683" y="1358" class="desc">Verdict with cited evidence and what changed since the last check</text>
+
+  <line x1="1027" y1="1380" x2="1027" y2="1406" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- Human checkpoint: approve -->
+  <rect x="748" y="1408" width="558" height="45" rx="22" fill="#fff4dc" stroke="#d4952b" stroke-width="2.5"/>
+  <text x="1027" y="1437" text-anchor="middle" class="human">HUMAN CHECKPOINT · investor approves or overrides</text>
+
+  <!-- ===== Short-term memory ===== -->
+  <rect x="537" y="1493" width="900" height="127" rx="12" fill="#e6eef7" stroke="#2e6a9e" stroke-width="2"/>
+  <text x="987" y="1533" text-anchor="middle" class="mem-h">SHORT-TERM MEMORY · shared run state for this check</text>
+  <text x="987" y="1567" text-anchor="middle" class="mem">claims · ToT tree · evidence + citations · metrics · bull/bear arguments · check results</text>
+  <text x="987" y="1598" text-anchor="middle" class="mem-i">every agent reads and writes only the part it needs</text>
+
+  <!-- ===== Long-term memory column ===== -->
+  <rect x="27" y="260" width="413" height="1193" rx="16" fill="#f4f8fc" stroke="#2e6a9e" stroke-width="2"/>
+
+  <rect x="48" y="282" width="370" height="598" rx="10" fill="#e6eef7" stroke="#2e6a9e" stroke-width="1.5"/>
+  <text x="69" y="320" class="mem-h">Semantic · facts</text>
+  <text x="69" y="360" class="mem">• Investor's theses</text>
+  <text x="69" y="392" class="mem">• Confirmed claims, thresholds</text>
+  <text x="69" y="424" class="mem">• Exit criteria</text>
+  <text x="69" y="456" class="mem">• Where each company</text>
+  <text x="87" y="484" class="mem">reports key data</text>
+
+  <rect x="48" y="902" width="370" height="348" rx="10" fill="#e6eef7" stroke="#2e6a9e" stroke-width="1.5"/>
+  <text x="69" y="940" class="mem-h">Procedural · how to behave</text>
+  <text x="69" y="980" class="mem">• Verdict rules</text>
+  <text x="69" y="1012" class="mem">• ToT rubric, gates, budget</text>
+  <text x="69" y="1044" class="mem">• Agent instructions</text>
+  <text x="69" y="1076" class="mem">• Guardrails: no buy/sell</text>
+  <text x="87" y="1104" class="mem">advice, cite every number</text>
+  <text x="69" y="1145" class="mem-i">versioned and reviewed,</text>
+  <text x="69" y="1171" class="mem-i">never learned silently</text>
+  <text x="69" y="1225" style="font-size:19px;font-weight:700;fill:#1f4e79">→ applies to every agent</text>
+
+  <rect x="48" y="1272" width="370" height="163" rx="10" fill="#e6eef7" stroke="#2e6a9e" stroke-width="1.5"/>
+  <text x="69" y="1310" class="mem-h">Episodic · experiences</text>
+  <text x="69" y="1350" class="mem">• Past checks and verdicts</text>
+  <text x="69" y="1382" class="mem">• Investor decisions</text>
+  <text x="87" y="1410" class="mem">and overrides</text>
+
+  <!-- memory links -->
+  <g stroke="#2e6a9e" stroke-width="2" stroke-dasharray="8 6" fill="none">
+    <line x1="418" y1="310" x2="655" y2="310"/>
+    <line x1="418" y1="729" x2="655" y2="729"/>
+    <line x1="418" y1="857" x2="655" y2="857"/>
+    <line x1="418" y1="1046" x2="507" y2="1046"/>
+    <line x1="418" y1="1330" x2="655" y2="1330"/>
+    <line x1="418" y1="1430" x2="748" y2="1430"/>
+  </g>
+  <g fill="#2e6a9e">
+    <circle cx="418" cy="310" r="5"/><circle cx="655" cy="310" r="5"/>
+    <circle cx="418" cy="729" r="5"/><circle cx="655" cy="729" r="5"/>
+    <circle cx="418" cy="857" r="5"/><circle cx="655" cy="857" r="5"/>
+    <circle cx="418" cy="1046" r="5"/><circle cx="507" cy="1046" r="5"/>
+    <circle cx="418" cy="1330" r="5"/><circle cx="655" cy="1330" r="5"/>
+    <circle cx="418" cy="1430" r="5"/><circle cx="748" cy="1430" r="5"/>
+  </g>
+  <text x="523" y="299" class="link-l">theses, claims</text>
+  <text x="523" y="719" class="link-l">data facts</text>
+  <text x="523" y="847" class="link-l">data facts</text>
+  <text x="523" y="1320" class="link-l">history</text>
+  <text x="523" y="1420" class="link-l">save decision</text>
+
+  <!-- ===== Legend (two rows) ===== -->
+  <g>
+    <line x1="27" y1="1700" x2="85" y2="1700" stroke="#262626" stroke-width="3" marker-end="url(#a)"/>
+    <text x="98" y="1707" class="legend">step routed by the Supervisor</text>
+    <line x1="420" y1="1700" x2="478" y2="1700" stroke="#a51c30" stroke-width="2.5" stroke-dasharray="10 7" marker-end="url(#ar)"/>
+    <text x="492" y="1707" class="legend">feedback loop</text>
+    <line x1="680" y1="1700" x2="740" y2="1700" stroke="#2e6a9e" stroke-width="2" stroke-dasharray="8 6"/>
+    <text x="752" y="1707" class="legend">memory read / write</text>
+    <line x1="990" y1="1700" x2="1050" y2="1700" stroke="#777" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round"/>
+    <text x="1062" y="1707" class="legend">tool call</text>
+
+    <rect x="27" y="1732" width="158" height="34" rx="17" fill="#a51c30"/>
+    <text x="106" y="1755" text-anchor="middle" class="badge">↻ ReAct loop</text>
+    <text x="198" y="1756" class="legend">reason → act → observe</text>
+    <rect x="460" y="1732" width="90" height="34" rx="17" fill="#0b7a75"/>
+    <text x="505" y="1755" text-anchor="middle" class="badge">ToT</text>
+    <text x="563" y="1756" class="legend">Tree-of-Thought: propose → gate → score → prune</text>
+    <rect x="1050" y="1732" width="58" height="34" rx="17" fill="#fff4dc" stroke="#d4952b" stroke-width="2.5"/>
+    <text x="1122" y="1756" class="legend">human checkpoint</text>
+  </g>
+</svg>

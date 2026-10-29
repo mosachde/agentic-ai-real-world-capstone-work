@@ -24,9 +24,9 @@ Given a ticker and a plain-language thesis, Thesis Check will:
 4. Verify every number and citation with a fact-checker agent.
 5. Return a verdict (Intact / Weakening / Broken) with cited evidence for the user to approve, or "Untestable as stated" if the thesis cannot be turned into testable claims.
 
-### System design (Checkpoint 2.1)
+### System design (Checkpoint 2.1, updated in 4.1)
 
-![Thesis Check system design: agents, reasoning loops, memory, tools and human checkpoints](docs/images/thesis-check-system-design.png)
+![Thesis Check system design: agents, reasoning loops, Tree-of-Thought claim search, memory, tools and human checkpoints](docs/images/thesis-check-system-design-v4.1.png)
 
 | Agent | Role | Reasoning loop | Long-term memory |
 |---|---|---|---|
@@ -46,9 +46,9 @@ Retrieval is used for filing text only. Explanations, guidance and new risks are
 
 ### Reasoning design (Checkpoint 4.1)
 
-Tree-of-Thought (ToT) is used only for claim decomposition, the one step where an early wrong choice is expensive and no later step can catch it: a linear chain that reads "keep margins above 60%" as "last quarter's margin" never tests management's outlook, and the run returns a fully verified answer to the wrong question. The Thesis Analyst runs a beam search (width 2) over two levels: 3 readings of the thesis as a cause-and-effect chain, then 3 claim sets for each reading kept. Code and tool checks gate every claim (well-formed, no price claims, the investor's numbers kept, testable from this company's SEC data). The testability probes answer "can this be tested?", never "would it pass?". A separate critic LLM scores each candidate on faithfulness, coverage, whether it could fail, distinctness and clarity. When the top two claim sets tie and come from different readings, the investor picks one at the existing confirmation step. The search costs about 12 short LLM calls and runs once per thesis, never on quarterly re-checks. Every other agent keeps its 2.1 reasoning, and the verdict stays deterministic. Full reasoning in [Capstone Checkpoint 4.1](docs/Capstone%20Checkpoint%204.1%20-%20Tree-of-Thought%20Reasoning.md).
+Tree-of-Thought (ToT) is used only for claim decomposition, the one step where an early wrong choice is expensive and no later step can catch it: a linear chain that reads "keep margins above 60%" as "last quarter's margin" never tests management's outlook, and the run returns a fully verified answer to the wrong question. The Thesis Analyst runs a beam search (width 2) over two levels: 3 readings of the thesis as a cause-and-effect chain, then 3 claim sets for each reading kept. Code and tool checks gate every claim (well-formed, no price claims, the investor's numbers kept, testable from this company's SEC data). The testability probes answer "can this be tested?", never "would it pass?". A separate critic LLM scores each candidate on faithfulness, coverage, whether it could fail, distinctness and clarity. When the top two claim sets tie and come from different readings, the investor picks one at the existing confirmation step. The search costs about 12 short LLM calls and runs once per thesis, never on quarterly re-checks. Every other agent keeps its 2.1 reasoning, and the verdict stays deterministic. LangGraph runs the search and holds the tree, LangChain runs the generator and critic, and MCP serves the SEC tools the probes share with the evidence agents. CrewAI was evaluated for each role and isn't needed. Full reasoning in [Capstone Checkpoint 4.1](docs/Capstone%20Checkpoint%204.1%20-%20Tree-of-Thought%20Reasoning.md).
 
-**Planned stack:** Python, LangGraph, an LLM API (Claude or OpenAI), SEC EDGAR APIs, Chroma, SQLite, Pydantic, pytest.
+**Planned stack:** Python, LangGraph and LangChain, MCP (SEC tools and thesis store), an LLM API (Claude or OpenAI), SEC EDGAR APIs, Chroma, SQLite, Pydantic, pytest.
 
 ## Repository structure
 
@@ -63,7 +63,9 @@ Tree-of-Thought (ToT) is used only for claim decomposition, the one step where a
 │   ├── Design Considerations - Thesis Check.md                    # open design decisions to revisit
 │   ├── STP and Positioning - Thesis Check.md                      # segmentation, targeting, positioning, persona
 │   ├── Self-study Capstone Checkpoint Activity 7.1_...docx        # capstone report plan
-│   └── images/thesis-check-system-design.png                      # system design diagram
+│   └── images/
+│       ├── thesis-check-system-design.png                         # v2.1 system design diagram
+│       └── thesis-check-system-design-v4.1.png / .svg             # v4.1 diagram with ToT (SVG is the editable source)
 └── code/                                                      # CMU Research Agent starter template (baseline)
     ├── research_agent/
     ├── tests/
