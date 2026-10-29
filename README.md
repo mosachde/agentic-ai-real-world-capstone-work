@@ -59,7 +59,7 @@ Tree-of-Thought (ToT) is used only for claim decomposition, the one step where a
 │   ├── Capstone Checkpoint 1.1 - Thesis Check.docx                # Module 1: project scoping and initial design
 │   ├── Capstone Checkpoint 2.1 - Agent Design Refinement.docx     # Module 2: reasoning loops, memory, tools
 │   ├── Capstone Checkpoint 3.1 - Retrieval Design.md / .docx      # Module 3: retrieval (RAG) design
-│   ├── Capstone Checkpoint 4.1 - Tree-of-Thought Reasoning.md     # Module 4: Tree-of-Thought reasoning design
+│   ├── Capstone Checkpoint 4.1 - Tree-of-Thought Reasoning.md / .docx  # Module 4: Tree-of-Thought reasoning design
 │   ├── Design Considerations - Thesis Check.md                    # open design decisions to revisit
 │   ├── STP and Positioning - Thesis Check.md                      # segmentation, targeting, positioning, persona
 │   ├── Self-study Capstone Checkpoint Activity 7.1_...docx        # capstone report plan
