@@ -145,7 +145,7 @@ A deterministic decision maker then applies the thresholds below.
 
 - Its strengths are delegation between agents and a manager LLM that routes work. Thesis Check's fixed workflow rules out both.
 - Role separation already comes from LangGraph nodes with separate prompts and scoped state.
-- Revisit CrewAI if defining all eight agents in LangGraph proves clumsy.
+- We shall revisit CrewAI if defining all eight agents in LangGraph proves clumsy.
 
 ## 8. Risk and mitigation
 
