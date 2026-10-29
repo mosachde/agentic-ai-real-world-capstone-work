@@ -235,5 +235,3 @@ The design also handles the other common ToT risks: the fixed beam and call caps
 Repository: [https://github.com/mosachde/agentic-ai-real-world-capstone-work](https://github.com/mosachde/agentic-ai-real-world-capstone-work)
 
 This checkpoint: [https://github.com/mosachde/agentic-ai-real-world-capstone-work/tree/checkpoint-4.1/docs](https://github.com/mosachde/agentic-ai-real-world-capstone-work/tree/checkpoint-4.1/docs)
-
-Next build step: the EDGAR ingest pipeline and the `search_filings` tool, which the ToT testability probes also depend on.
