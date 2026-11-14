@@ -6,18 +6,26 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 
 | # | Consideration | Source | Status |
 |---|---|---|---|
-| 1 | Verdict scoring rubric | Feedback | Open, to solve next: Checkpoint 6.1 depends on it |
+| 1 | Verdict scoring rubric | Feedback on Checkpoints 1.1 and 5.1 | Open, to solve next: Checkpoint 6.1 depends on it |
 | 2 | Unclear thesis: offer at most 2 peer theses, otherwise block the run | Own product decision | Provisional, to revisit |
 | 3 | How the evidence agents read and write "data facts" memory | Review of Checkpoint 2.1 | Resolved in Checkpoint 5.1 (details open) |
 | 4 | Bull/Bear requests for more evidence: an unbounded loop | Review of Checkpoint 2.1 | Resolved in Checkpoint 5.1 (details open) |
 | 5 | Tree-of-Thought claim search: provisional thresholds, weights and budget | Checkpoint 4.1 | Provisional, to calibrate |
 | 6 | Safety design: details of the guardrails and metrics added in 6.1 | Checkpoint 6.1 | Open, to solve |
+| 7 | Re-checks: refreshing previously verified information when new filings arrive | Feedback on Checkpoint 5.1 | Open, to solve |
 
 ---
 
 ## 1. Verdict scoring rubric
 
-**Source:** feedback on Checkpoint 1.1.
+**Source:** feedback on Checkpoint 1.1; raised again in feedback on Checkpoint 5.1 (recorded Nov 14, 2026).
+
+**Checkpoint 5.1 feedback.** Two of the reviewer's three suggestions belong here:
+
+- "Consider defining the specific conditions under which the system assigns the verdicts Intact, Weakening, or Broken." This is the second time a reviewer has asked for it, which is another reason to settle the rubric next. The claim-level scoring rules (open question below) are those conditions.
+- "Clarify how the system distinguishes between evidence that contradicts an investment claim and information that is simply unavailable or insufficient." See the open question "Contradicted vs. unavailable" below.
+
+The third suggestion, refreshing verified information when new filings arrive, is entry #7.
 
 **The gap.** The design lists three verdicts (Intact, Weakening, Broken), but the step from claim-level evidence to the overall verdict is not written down. Without a rule, the LLM decides the verdict, and two runs on the same filing could disagree.
 
@@ -40,6 +48,13 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 - **The 80% threshold in practice.** With 3 or 4 claims, 80% Met means *all* claims Met (2/3 = 67%, 3/4 = 75%). Only with 5 claims does it allow one non-Met claim (4/5). Is that intended, or should the rule be stated as counts?
 - **Exactly 1 Broken** always gives Weakening. Should one critical claim (e.g., the core margin claim) be able to break the thesis on its own? This would mean claim weights or a "core claim" flag.
 - **How claims with insufficient evidence count.** Excluded from the denominator? Counted as Weakening? Do they lower confidence instead of changing the verdict?
+- **Contradicted vs. unavailable** (Checkpoint 5.1 feedback).
+  - **What the design already does:** it keeps the two apart in principle. When nothing recent answers a claim, the claim is marked "insufficient evidence" rather than guessed (Checkpoints 2.1 and 3.1). In the 3.1 example and the draft rule above (Broken = threshold missed), Broken comes with cited evidence that the threshold was missed.
+  - **Still to define:** which cases count as unavailable. The candidates are:
+    - No recent passage or figure is found.
+    - The company doesn't report the metric.
+    - Evidence still fails the fact-check after two rework loops.
+  - **Also open:** how each case is shown to the investor, so a gap is never read as a failing claim.
 - **How "Untestable as stated"** (from the vague-thesis handling) fits in. It is probably a separate path that runs before the rubric and never reaches it.
 - **Claim-level scoring rules.** What makes a single claim Met vs Weakening vs Broken? For example: Met = threshold satisfied in the latest period; Weakening = satisfied, but trending toward the threshold or within a margin of it; Broken = threshold missed. The trend window and margin need defining.
 - **Confidence vs verdict.** Bull/bear disagreement and fact-check results should probably set a separate *confidence* level (High / Medium / Low) rather than change the verdict itself.
@@ -89,7 +104,7 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 **Resolution (Checkpoint 5.1, Nov 7, 2026).** Adopted as proposed: the Supervisor hands each agent only its part of the run state, and learned facts are saved only after the Fact-Checker verifies them. The questions below are still open.
 
 **Open questions to resolve when revisiting:**
-- **Staleness.** Should a saved fact expire, or be re-checked when a company changes its reporting (new segments, restated figures)?
+- **Staleness.** Should a saved fact expire, or be re-checked when a company changes its reporting (new segments, restated figures)? Now tracked in #7.
 - **Scope.** Are facts stored per company, or shared across companies that use the same XBRL tags?
 - **Doc consistency.** Update the tools table or the memory table in the next checkpoint so both describe the same access.
 
@@ -165,3 +180,24 @@ The checkpoint names these items but doesn't yet define how they behave.
 - **Release gate.** LLM-judged scores can vary from run to run. How should a small drop be treated?
 - **Cost and latency targets.** Only the claim search has a budget (Checkpoint 4.1). The full run has none yet.
 - **Doc consistency.** Figure 1 still lacks the Bull/Bear evidence-request path (#4), and the tools and memory tables still differ (#3). Fix both in the next checkpoint that updates the diagram.
+
+---
+
+## 7. Re-checks: refreshing previously verified information when new filings arrive
+
+**Source:** feedback on Checkpoint 5.1 (recorded Nov 14, 2026): "Since the architecture supports periodic reassessment, explain how previously verified information is refreshed when new filings become available."
+
+**What the design says now:**
+- New filings are added to the index as they appear, which also triggers the quarterly re-check (Checkpoint 3.1).
+- Re-checks reuse the confirmed claims and saved facts, and process only new filings (Checkpoint 5.1). The claim search does not rerun on re-checks (Checkpoint 4.1).
+- Learned facts are saved only after the Fact-Checker verifies them (Checkpoint 5.1).
+- The report shows what changed since the last check (Checkpoint 2.1).
+
+**The gap.** The design doesn't say what happens to information verified in an earlier run when a new filing arrives. Processing only new filings could keep a figure that a later filing has restated, and a stale saved fact would be reused on every later check. That is the memory-poisoning risk named in Checkpoint 6.1, arriving through old data rather than an attack.
+
+**Open questions to resolve when revisiting:**
+- **Restated figures.** When a new 10-K or 10-Q revises an earlier period, does the re-check re-pull that period from XBRL and compare it with the stored value?
+- **Saved facts.** Should a saved fact expire, or be re-verified on every re-check? This is the staleness question moved from #3.
+- **Earlier evidence.** If the new filing says nothing on a claim, does last quarter's verified passage still count? Or does the claim become "insufficient evidence" for the new period, in line with the 3.1 rule that search never falls back to older filings?
+- **Report.** How does "what changed since your last check" mark refreshed items against carried-forward ones?
+- **Evaluation.** Add a golden-set case in which a new filing restates an earlier figure. The expected behavior still needs to be decided by the answers above.
