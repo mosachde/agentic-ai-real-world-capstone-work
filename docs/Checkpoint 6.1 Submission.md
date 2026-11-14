@@ -11,8 +11,8 @@ Thesis Check takes a ticker and the investor's reason for owning it, turns that 
 - **False reassurance:** a wrong number, or a passage from the wrong period, lets a failing claim pass.
 - **The wrong question:** poorly chosen claims give a verified answer to the wrong question.
 - **Agreeing with the user:** the bias the product exists to counter.
-- **Untrusted text:** the thesis or a retrieved passage could carry hidden instructions.
-- **Memory poisoning:** a wrong saved fact is reused on every later check.
+- **Untrusted text:** the thesis or a retrieved passage could carry hidden instructions (OWASP ASI01, goal hijack).
+- **Memory poisoning:** a wrong saved fact is reused on every later check (OWASP ASI06).
 - **Reading as advice:** the report could look like a buy/sell recommendation.
 
 ## 2. Guardrails
@@ -21,7 +21,7 @@ Guardrails sit at the four gates of the agent loop and are enforced in code, not
 
 | Gate | Guardrails |
 |---|---|
-| Input | Thesis text scanned and wrapped as untrusted *(new)*; vague theses get clarifying questions or "Untestable as stated" |
+| Input | Thesis text and retrieved passages scanned for injected instructions and wrapped as untrusted *(new)*; vague theses get clarifying questions or "Untestable as stated" |
 | Plan | Fixed workflow, not LLM routing; claims must pass code gates (no price claims, testable from SEC data); the investor confirms the claims |
 | Tools | Read-only tools per agent (none for Bull and Bear); no trading tool; searches filtered to the claim's period; at most two rework loops; step and cost limits |
 | Output | Every number and quote matched to its source and period; verdict from fixed rules; buy/sell language blocked *(new)* |
@@ -48,7 +48,7 @@ The investor always confirms the claims and approves or overrides the verdict. T
 
 - **The thesis is ambiguous:** it asks clarifying questions; if two readings tie, the investor picks one.
 - **Evidence is missing or contested:** unverified claims are marked "insufficient evidence", and unresolved Bull/Bear disagreement or a spent rework budget lowers confidence. Nothing is guessed.
-- **A guardrail fires:** injected instructions or a budget overrun stop the run for my review *(new)*.
+- **Injected instructions are found:** the run stops for my review *(new)*.
 
 ## 5. How the parts work together
 
