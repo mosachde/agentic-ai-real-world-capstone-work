@@ -6,11 +6,12 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 
 | # | Consideration | Source | Status |
 |---|---|---|---|
-| 1 | Verdict scoring rubric | Feedback | Open, to revisit |
+| 1 | Verdict scoring rubric | Feedback | Open, to solve next: Checkpoint 6.1 depends on it |
 | 2 | Unclear thesis: offer at most 2 peer theses, otherwise block the run | Own product decision | Provisional, to revisit |
 | 3 | How the evidence agents read and write "data facts" memory | Review of Checkpoint 2.1 | Resolved in Checkpoint 5.1 (details open) |
 | 4 | Bull/Bear requests for more evidence: an unbounded loop | Review of Checkpoint 2.1 | Resolved in Checkpoint 5.1 (details open) |
 | 5 | Tree-of-Thought claim search: provisional thresholds, weights and budget | Checkpoint 4.1 | Provisional, to calibrate |
+| 6 | Safety design: details of the guardrails and metrics added in 6.1 | Checkpoint 6.1 | Open, to solve |
 
 ---
 
@@ -32,6 +33,8 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 | Anything else | **Weakening** |
 
 **Benefit.** The verdict becomes reproducible: the same filing gives the same answer. Because the rule is plain code rather than an LLM judgment, it can be unit-tested with pytest and checked in evaluation (run twice, compare).
+
+**Why it is next (Checkpoint 6.1, Nov 14, 2026).** Checkpoint 6.1 says unresolved Bull/Bear disagreement or a spent rework budget lowers confidence, and that low confidence is flagged for the investor. That human-intervention rule is only concrete once the confidence levels below are defined. The 6.1 metric "two runs agree" also tests this rubric.
 
 **Open questions to resolve when revisiting:**
 - **The 80% threshold in practice.** With 3 or 4 claims, 80% Met means *all* claims Met (2/3 = 67%, 3/4 = 75%). Only with 5 claims does it allow one non-Met claim (4/5). Is that intended, or should the rule be stated as counts?
@@ -58,6 +61,8 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 4. If the user doesn't like either option, the run is **not allowed**. No verdict and no limited mode for this case.
 
 **Rationale.** It forces the user to commit to a real, testable thesis instead of running checks on nothing, which fits the product's purpose of deciding on evidence, not emotion.
+
+**Checkpoint 6.1 (Nov 14, 2026).** The 6.1 safety metric "no verdict without a confirmed thesis" holds whichever way this is decided, so this point can wait.
 
 **Open questions to resolve when revisiting:**
 - **Few users per ticker.** Early on, a ticker may have no peer theses. Fall back to seeded template theses per sector or company?
@@ -137,3 +142,26 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 - **Clarifying-question limit.** The failure path asks one clarifying question that counts toward 2.1's limit of 2–3. If the limit is already spent, should the run go straight to "Untestable as stated"?
 - **Probe cutoff.** The text testability probe should use the same similarity cutoff as `search_filings` (Checkpoint 3.1), so "testable at decomposition" means "findable at research". Confirm when the retrieval tool is built.
 - **Linear baseline.** If ToT doesn't beat a single linear decomposition on evidence coverage, agreement with reference claim sets and investor edit rate, it is removed (Checkpoint 4.1, Section 8).
+
+---
+
+## 6. Safety design: details of the guardrails and metrics added in 6.1
+
+**Source:** Checkpoint 6.1 (Nov 14, 2026).
+
+**The gap.** Checkpoint 6.1 adds guardrails and metrics marked *(new)*: an input scan, a buy/sell output check, one trace ID per run, a groundedness judge, injection test cases, a release gate and operational metrics. All eight were reviewed and kept. Two were corrected during the review:
+
+- The input scan now covers retrieved passages as well as the thesis.
+- Only injected instructions stop a run; step and budget limits keep their 2.1–5.1 behaviour.
+
+The checkpoint names these items but doesn't yet define how they behave.
+
+**Why it matters.** Module 6 lists under-specified policies and over-restrictive guardrails as common failures. A vague rule makes two checks disagree, and a strict one blocks honest users.
+
+**Open questions to resolve when revisiting:**
+- **Injection scan.** Which patterns count as injected instructions? What happens when an honest thesis is flagged by mistake, given that a flag stops the run?
+- **Buy/sell check.** Define the boundary with yes/no examples. The verdict "Broken" must stay allowed; a line such as "you should sell" must not.
+- **Groundedness judge.** How many of my labeled examples, and what agreement with my labels, before the judge is trusted?
+- **Release gate.** LLM-judged scores can vary from run to run. How should a small drop be treated?
+- **Cost and latency targets.** Only the claim search has a budget (Checkpoint 4.1). The full run has none yet.
+- **Doc consistency.** Figure 1 still lacks the Bull/Bear evidence-request path (#4), and the tools and memory tables still differ (#3). Fix both in the next checkpoint that updates the diagram.

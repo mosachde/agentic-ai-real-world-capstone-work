@@ -4,7 +4,7 @@
 
 CMU Executive Education, *Agentic AI and Applications*, capstone project by Mohit Sachdeva.
 
-> **Status: v4.1, Tree-of-Thought reasoning design (Module 4).** The design now specifies where the agent explores alternatives before committing: Tree-of-Thought search is used in one step only, when the Thesis Analyst turns a thesis into testable claims. It builds on the v3.1 retrieval design and the v2.1 design of reasoning loops, memory and tools. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
+> **Status: v6.1, safety design: guardrails, evaluation and human oversight (Module 6).** The design now specifies the risks in the workflow, the guardrails at each gate of the agent loop, the evaluation metrics, and when a person must step in. It builds on the v5.1 multi-agent design, the v4.1 Tree-of-Thought claim search, the v3.1 retrieval design and the v2.1 design of reasoning loops, memory and tools. The code folder still contains the course's single-agent starter template, unmodified; the multi-agent system is built in later versions.
 
 ## The problem
 
@@ -48,6 +48,23 @@ Retrieval is used for filing text only. Explanations, guidance and new risks are
 
 Tree-of-Thought (ToT) is used only for claim decomposition, the one step where an early wrong choice is expensive and no later step can catch it: a linear chain that reads "keep margins above 60%" as "last quarter's margin" never tests management's outlook, and the run returns a fully verified answer to the wrong question. The Thesis Analyst runs a beam search (width 2) over two levels: 3 readings of the thesis as a cause-and-effect chain, then 3 claim sets for each reading kept. Code and tool checks gate every claim (well-formed, no price claims, the investor's numbers kept, testable from this company's SEC data). The testability probes answer "can this be tested?", never "would it pass?". A separate critic LLM scores each candidate on faithfulness, coverage, whether it could fail, distinctness and clarity. When the top two claim sets tie and come from different readings, the investor picks one at the existing confirmation step. The search costs about 12 short LLM calls and runs once per thesis, never on quarterly re-checks. Every other agent keeps its 2.1 reasoning, and the verdict stays deterministic. LangGraph runs the search and holds the tree, LangChain runs the generator and critic, and MCP serves the SEC tools the probes share with the evidence agents. CrewAI was evaluated for each role and isn't needed. Full reasoning in [Capstone Checkpoint 4.1 v2](docs/Capstone%20Checkpoint%204.1%20-%20Tree-of-Thought%20Reasoning%20v2.md); the longer v1 is [here](docs/Capstone%20Checkpoint%204.1%20-%20Tree-of-Thought%20Reasoning.md).
 
+### Multi-agent design (Checkpoint 5.1)
+
+Thesis Check has eight agents: a Supervisor that coordinates and seven specialists. A job gets its own agent only when it needs different tools or must stay independent: the Bull and Bear must not share reasoning, and the Fact-Checker must not be the agent that found the evidence. No news, planner or verdict-judge agent is added. Coordination is hybrid: a sequential backbone (claims → evidence → debate → fact-check → report) built as a LangGraph graph with fixed paths, the two evidence agents running in parallel, and short, capped loops. A failed fact-check sends a claim back at most twice, and a Bull or Bear request for more evidence counts toward the same limit. Agents write to one shared run state in a fixed format, the Supervisor gives each agent only the part it needs, every piece of evidence carries its citation, and agents never call each other freely. Full reasoning in [Capstone Checkpoint 5.1](docs/Capstone%20Checkpoint%205.1%20-%20Multi-Agent%20Design.md).
+
+### Safety design (Checkpoint 6.1)
+
+Every tool is read-only and no trading tool exists, so the main risks are about trust, not actions:
+
+- False reassurance from a wrong number or a passage from the wrong period.
+- Claims that answer the wrong question.
+- Agreeing with the user.
+- Hidden instructions in untrusted text.
+- A wrong fact saved to memory.
+- A report that reads as advice.
+
+Guardrails sit at the four gates of the agent loop (input, plan, tools, output) and are enforced in code, not prompts. Five core metrics (numeric accuracy, groundedness, verdict agreement, claim quality, safety) run on a golden set and are compared with the course starter and a prompt-only baseline. A change ships only if no score drops. The investor always confirms the claims and approves or overrides the verdict. The system also hands control to a person when the thesis is ambiguous, evidence is missing or contested, or injected instructions are found. Full reasoning in [Checkpoint 6.1 Submission](docs/Checkpoint%206.1%20Submission.md); course notes in [Module 6 notes](docs/Module%206%20-%20Evaluation,%20Guardrails,%20Logging%20and%20Observability%20-%20Notes.md).
+
 **Planned stack:** Python, LangGraph and LangChain, MCP (SEC tools and thesis store), an LLM API (Claude or OpenAI), SEC EDGAR APIs, Chroma, SQLite, Pydantic, pytest.
 
 ## Repository structure
@@ -61,6 +78,9 @@ Tree-of-Thought (ToT) is used only for claim decomposition, the one step where a
 │   ├── Capstone Checkpoint 3.1 - Retrieval Design.md / .docx      # Module 3: retrieval (RAG) design
 │   ├── Capstone Checkpoint 4.1 - Tree-of-Thought Reasoning v2.md / .docx  # Module 4: ToT reasoning design (concise)
 │   ├── Capstone Checkpoint 4.1 - Tree-of-Thought Reasoning.md / .docx     # Module 4: v1, long-form reference
+│   ├── Capstone Checkpoint 5.1 - Multi-Agent Design.md / .docx    # Module 5: multi-agent design
+│   ├── Checkpoint 6.1 Submission.md / .docx                       # Module 6: guardrails, evaluation, human oversight
+│   ├── Module 6 - Evaluation, Guardrails, Logging and Observability - Notes.md  # Module 6 course notes (text-only reference)
 │   ├── Design Considerations - Thesis Check.md                    # open design decisions to revisit
 │   ├── STP and Positioning - Thesis Check.md                      # segmentation, targeting, positioning, persona
 │   ├── Self-study Capstone Checkpoint Activity 7.1_...docx        # capstone report plan
@@ -90,7 +110,9 @@ The single-agent starter is kept as the **baseline** the multi-agent system will
 - **v1.0 / v1.1**: problem definition, users, positioning, draft architecture (Checkpoint 1.1)
 - **v2.1**: agent design refinement: reasoning loops, memory, tools, system diagram (Checkpoint 2.1)
 - **v3.1**: retrieval design: semantic search over SEC filings, chunking, top-k, wrong-period failure mode (Checkpoint 3.1)
-- **v4.1**: Tree-of-Thought reasoning design: beam search over claim decompositions, gates and critic rubric, tie policy, budget, tool mapping (Checkpoint 4.1) *(this version)*
+- **v4.1**: Tree-of-Thought reasoning design: beam search over claim decompositions, gates and critic rubric, tie policy, budget, tool mapping (Checkpoint 4.1)
+- **v5.1**: multi-agent design: eight agents, hybrid coordination, shared run state with scoped views, capped loops (Checkpoint 5.1)
+- **v6.1**: safety design: risks, guardrails at the four gates of the agent loop, evaluation metrics, human-intervention criteria (Checkpoint 6.1) *(this version)*
 - **Next**: SEC EDGAR data client, filing ingest and `search_filings` retrieval tool, financial tools; single ReAct Filing Researcher (first upgrade over the baseline)
 - **Then**: multi-agent supervisor graph
 - **Then**: bull/bear debate, fact-checker, human-in-the-loop
