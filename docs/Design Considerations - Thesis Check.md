@@ -8,8 +8,8 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 |---|---|---|---|
 | 1 | Verdict scoring rubric | Feedback | Open, to revisit |
 | 2 | Unclear thesis: offer at most 2 peer theses, otherwise block the run | Own product decision | Provisional, to revisit |
-| 3 | How the evidence agents read and write "data facts" memory | Review of Checkpoint 2.1 | Open, to revisit |
-| 4 | Bull/Bear requests for more evidence: an unbounded loop | Review of Checkpoint 2.1 | Open, to revisit |
+| 3 | How the evidence agents read and write "data facts" memory | Review of Checkpoint 2.1 | Resolved in Checkpoint 5.1 (details open) |
+| 4 | Bull/Bear requests for more evidence: an unbounded loop | Review of Checkpoint 2.1 | Resolved in Checkpoint 5.1 (details open) |
 | 5 | Tree-of-Thought claim search: provisional thresholds, weights and budget | Checkpoint 4.1 | Provisional, to calibrate |
 
 ---
@@ -81,6 +81,8 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 1. **Reads:** the Supervisor loads the relevant data facts into each evidence agent's scoped view at the start of the run. Neither agent needs a memory tool, which keeps least privilege intact.
 2. **Writes:** a fact is saved only after the Fact-Checker has verified the evidence it came from, by code at the end of the run, never by an agent mid-loop.
 
+**Resolution (Checkpoint 5.1, Nov 7, 2026).** Adopted as proposed: the Supervisor hands each agent only its part of the run state, and learned facts are saved only after the Fact-Checker verifies them. The questions below are still open.
+
 **Open questions to resolve when revisiting:**
 - **Staleness.** Should a saved fact expire, or be re-checked when a company changes its reporting (new segments, restated figures)?
 - **Scope.** Are facts stored per company, or shared across companies that use the same XBRL tags?
@@ -97,6 +99,8 @@ Open design points to revisit before they are finalized in a checkpoint or the f
 **Why it matters.** Without a cap, the debate can keep reopening research and spending the cost budget, which is the unbounded behavior the fixed Supervisor workflow is meant to prevent. An advocate could also keep asking until it finds support for its side.
 
 **Proposal.** Count an evidence request against the same budget as fact-check rework: at most one request per claim, and at most two trips back to the evidence agents per claim in total. Once the budget is spent, the gap is recorded and lowers confidence, the same way unresolved disagreement does.
+
+**Resolution (Checkpoint 5.1, Nov 7, 2026).** Adopted as proposed: the Bull or Bear may ask for more evidence once per claim, counted toward the same limit of two trips back to the evidence agents. The path is now in Checkpoint 5.1's list of capped loops, but not yet in Figure 1. The questions below are still open.
 
 **Open questions to resolve when revisiting:**
 - **Who approves a request.** The Supervisor by a fixed rule (e.g., the claim has fewer than N cited passages), or does every request go through?
